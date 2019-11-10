@@ -1,6 +1,9 @@
 ﻿using ApiLibs.Todoist;
+using DailyTodo.Helpers;
 using DailyTodo.Services;
+using DailyTodo.Views;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -50,15 +53,29 @@ namespace DailyTodo.BackgroundTasks
             return Task.Run(async () =>
             {
                 var details = taskInstance.TriggerDetails as ToastNotificationActionTriggerDetail;
+                Settings settings = await new UwpMemory().Read<Settings>("settings.json");
+                var Todoist = new TodoistService(settings.TodoistKey, settings.TodoistUserAgent);
+
                 if (details != null)
                 {
                     string arguments = details.Argument;
                     var userInput = details.UserInput;
 
-                    if(arguments.StartsWith("complete"))
+                    if (arguments.StartsWith("complete"))
                     {
-                        TodoistService todoist = TodoistGenerator.Todoist;
+                        TodoistService todoist = Todoist;
                         await todoist.MarkTodoAsDone(long.Parse(details.Argument.Remove(0, 9)));
+                    }
+
+                    if (arguments.StartsWith("remove"))
+                    {
+                        TodoistService todoist = Todoist;
+                        ItemUpdate update = new ItemUpdate(long.Parse(details.Argument.Remove(0, 7)))
+                        {
+                            Labels = new List<long>()
+                        };
+                        await todoist.Update(update);
+
                     }
 
                     // Perform tasks

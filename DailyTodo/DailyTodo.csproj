@@ -93,13 +93,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ApiLibs">
-      <Version>1.1.0-CI-20190121-145624</Version>
+      <Version>1.43.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.1.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications">
       <Version>5.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.1.190405004.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.0</Version>
@@ -118,12 +121,15 @@
     <Compile Include="BackgroundTasks\NotificationUpdater.cs" />
     <Compile Include="Helpers\NotificationHandler.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Helpers\TodoistParser.cs" />
+    <Compile Include="Helpers\UwpMemory.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultLaunchActivationHandler.cs" />
     <Compile Include="Services\BackgroundTaskService.cs" />
     <Compile Include="Services\LiveTileService.cs" />
     <Compile Include="Services\LiveTileService.Samples.cs" />
     <Compile Include="Services\NavigationService.cs" />
+    <Compile Include="Views\Convert.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -196,6 +202,14 @@
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

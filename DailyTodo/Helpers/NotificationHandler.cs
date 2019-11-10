@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.UI.Notifications;
 
@@ -13,25 +14,56 @@ namespace DailyTodo.Helpers
 {
     class NotificationHandler
     {
-        public async Task UpdateNotifications()
+        public async Task UpdateNotifications(TodoistService todoist)
         {
-            ToastNotificationManager.History.Clear();
-            var newToasts = await CreateNotifications();
+            var oldToasts = ToastNotificationManager.History.GetHistory();
+            var oldToastsIds = oldToasts.Select(i => i.Tag).ToList();
+
+            var newToasts = await CreateNotifications(todoist);
+            var newToastIds = newToasts.Select(i => i.Tag).ToList();
+
+
             foreach (var toast in newToasts)
             {
-                ToastNotification notification = new ToastNotification(toast.GetXml());
-                notification.SuppressPopup = true;
-                ToastNotificationManager.CreateToastNotifier().Show(notification);
+                if (!oldToastsIds.Contains(toast.Tag))
+                {
+                    ToastNotificationManager.CreateToastNotifier().Show(toast);
+                }
+            }
+
+
+
+
+            foreach (var toast in oldToasts)
+            {
+                if (!newToastIds.Contains(toast.Tag))
+                {
+                    ToastNotificationManager.History.Remove(toast.Tag);
+                }
             }
         }
 
-        public async Task<IEnumerable<ToastContent>> CreateNotifications()
+        public static string DisplayContent(string input)
         {
-            TodoistService todoist = TodoistGenerator.Todoist;
+            var match = Regex.Match(input, "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\s\\(([^\\)]+)\\)");
+            if (match.Success)
+            {
+                return match.Groups[3].Value;
+            }
+            return input;
+        }
+
+        public async Task<IEnumerable<ToastNotification>> CreateNotifications(TodoistService todoist)
+        {
             var today = await todoist.GetLabel("today");
-            List<Item> todos = (await todoist.GetItems()).Where(i => i.DueDateUtc < DateTime.UtcNow | i.Labels.Contains(today.Id)).ToList();
+            List<Item> allTodos = await todoist.GetItems();
+            List<Item> todos = allTodos.Where(i => i.Labels.Contains(today.Id)).OrderBy(i => i.Priority).ToList();
+            //if(todos.Count == 0)
+            //{
+            //    todos = allTodos.Where(i => i.DueDateUtc < DateTime.UtcNow.Date.AddDays(1)).ToList();
+            //}
             var proj = await todoist.GetProjects();
-            return todos.Select(i => new ToastContent()
+            return todos.Select(i => (todo: i, toast: new ToastContent()
             {
                 Visual = GetVisual(i, proj.First(j => j.Id == i.ProjectId)),
                 Actions = GetActions(i.Id),
@@ -44,6 +76,10 @@ namespace DailyTodo.Helpers
 
                 }.ToString(),
                 ActivationType = ToastActivationType.Background,
+            })).Select(i => new ToastNotification(i.toast.GetXml())
+            {
+                SuppressPopup = true,
+                Tag = i.todo.Id.ToString()
             });
         }
 
@@ -54,6 +90,10 @@ namespace DailyTodo.Helpers
                 Buttons =
                 {
                     new ToastButton("Complete", "complete=" + todoId)
+                    {
+                        ActivationType = ToastActivationType.Background,
+                    },
+                    new ToastButton("Remove", "remove=" + todoId)
                     {
                         ActivationType = ToastActivationType.Background,
                     }
@@ -71,7 +111,7 @@ namespace DailyTodo.Helpers
                     {
                         new AdaptiveText()
                         {
-                            Text = todo.Content,
+                            Text = DisplayContent(todo.Content),
                             HintMaxLines = 1
                         },
 
@@ -82,7 +122,7 @@ namespace DailyTodo.Helpers
 
                         new AdaptiveText()
                         {
-                            Text = todo.DateString ?? "@today"
+                            Text = todo.Due?.String ?? "@today"
                         }
                     }
                 }

@@ -4,26 +4,115 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:todoist="using:ApiLibs.Todoist"
+    xmlns:local="using:DailyTodo.Views"
+    xmlns:helpers="using:DailyTodo.Helpers"
     Style="{StaticResource PageStyle}"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:ItemTextConverter x:Key="ItemTextConverter" />
+        <local:ContentTextConverter x:Key="ContentTextConverter"/>
+    </Page.Resources>
     <Grid
         x:Name="ContentArea"
         Margin="{StaticResource MediumLeftRightMargin}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="Daily Todo" Style="{ThemeResource HeaderTextBlockStyle}" Margin="0,0,0,10" Tapped="Show_Todoist_Flyout"/>
 
-        <TextBlock
-            Grid.Row="0"
-            x:Uid="Main_Title"
-            Style="{StaticResource PageTitleStyle}" />
-        <Grid
-            Grid.Row="1" 
-            Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
-            <!--The SystemControlPageBackgroundChromeLowBrush background represents where you should place your content. 
-                Place your content here.-->
+        <StackPanel Grid.Row="1">
+            <TextBox x:Name="QuickAddTextbox" PlaceholderText="Add quick to do" KeyDown="QuickAddTextbox_KeyDown" CharacterReceived="QuickAddTextbox_CharacterReceived"/>
+
+            <ListView Margin="0,5,0,15" ItemsSource="{x:Bind quickaddItems, Mode=OneWay}" IsItemClickEnabled="False" IsTapEnabled="False" SelectionMode="None">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="helpers:TodoistItem">
+                        <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}" Margin="0,0,-10,0" Orientation="Horizontal" Padding="10,5">
+                            <Path Data="{Binding GetSVG}" Fill="Gray" Stretch="UniformToFill" Height="10"/>
+                            <TextBlock FontSize="{ThemeResource AutoSuggestBoxIconFontSize}" Text="{x:Bind item}" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <ContentDialog
+            Title="Todoist API key"
+            PrimaryButtonText="Save"
+            CloseButtonText="Cancel"
+            DefaultButton="Primary"
+            x:Name="ContentDialogTodoistKey">
+
+            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <TextBox x:Name="TodoistKeyBox" PlaceholderText="Your key here" TextChanged="PasswordBox_PasswordChanged"/>
+                <TextBox x:Name="TodoistAgentBox" PlaceholderText="UserAgent" TextChanged="PasswordBox_PasswordChanged"/>
+            </StackPanel>
+
+        </ContentDialog>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <GridView BorderThickness="0" Grid.Row="2" ItemsSource="{x:Bind InstanceItems, Mode=OneWay}" x:Name="Lister" SelectionMode="None">
+                <GridView.ItemTemplate>
+
+                    <DataTemplate x:DataType="todoist:Item">
+                        <Grid Loaded="SetPossibleTodayColor" Tapped="Grid_Tapped">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="99*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Complete" Click="FlyoutItem_CompleteItem"/>
+                                    <MenuFlyoutItem Text="Filter" Click="FlyoutItem_Filter"/>
+                                    <MenuFlyoutSubItem Text="Toggle Label">
+                                        <MenuFlyoutItem Text="yesterday" Click="FlyoutItem_ChangeLabel" />
+                                        <MenuFlyoutItem Text="tomorrow" Click="FlyoutItem_ChangeLabel" />
+                                    </MenuFlyoutSubItem>
+
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
+                            <StackPanel Background="Gainsboro" Width="5" Loaded="SetColor"/>
+                            <StackPanel Grid.Column="1" Width="450" Margin="10">
+
+                                <TextBlock Text="{x:Bind Converter={StaticResource ContentTextConverter}}"/>
+                                <TextBlock Text="{x:Bind Converter={StaticResource ItemTextConverter}}" FontSize="10" Foreground="Gray"/>
+                            </StackPanel>
+                        </Grid>
+
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Projects" Style="{StaticResource HeaderTextBlockStyle}" Margin="20"/>
+                <ListView Grid.Row="1" x:Name="ProjectSelector" ItemsSource="{x:Bind InstanceProjects, Mode=OneWay}" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,-25,0" SelectionMode="Multiple" IsMultiSelectCheckBoxEnabled="False" SelectionChanged="ProjectSelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="todoist:Project">
+                            <TextBlock Margin="3" Text="{x:Bind Name}" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                
+            </Grid>
+            
+
         </Grid>
+        
+
     </Grid>
 </Page>
