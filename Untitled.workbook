@@ -1,0 +1,118 @@
+---
+uti: com.xamarin.workbook
+id: 53020236-e551-4dfd-8b87-79858116574a
+title: Untitled
+platforms:
+- DotNetCore
+packages:
+- id: ApiLibs
+  version: 1.38.0
+---
+
+```csharp
+#r "ApiLibs"
+```
+
+```csharp
+using ApiLibs.Todoist;
+using ApiLibs.General;
+
+Passwords pass = Passwords.ReadPasswords();
+TodoistService todoist = new TodoistService(pass.TodoistKey, pass.TodoistUserAgent);
+
+var projs = await todoist.GetProjects();
+var labels = await todoist.GetLabels();
+```
+
+```csharp
+using System.Collections;
+
+public abstract class TodoistItem {
+    public abstract string GetSVG();
+
+    public string item;
+    public bool invalid;
+
+    public TodoistItem(string item, bool invalid) {
+        this.item = item;
+        this.invalid = invalid;
+    }
+
+    public string GetItem() {
+        return item;
+    }
+}
+
+public class TodoistParser {
+
+    List<Project> projects;
+    List<Label> labels;
+
+    public TodoistParser(List<Project> projects, List<Label> labels) {
+        this.projects = projects;
+        this.labels = labels;
+    }
+
+    public (List<Project>, List<Label>) Parse(string text) {
+        List<Project> todoProjects = new List<Project>();
+        List<Label> todoLabels = new List<Label>();
+
+        for(int i = 0; i < text.Length-1; i++){
+            if(text[i] != '@' && text[i] != '#' && S(text, i-1)) {
+                continue;
+            }
+
+            string itemName = "";
+            List<string> result = text[i] == '@' ? labels.Select(it => it.Name).ToList() : projects.Select(it => it.Name).ToList();
+            for(int j = i+1; j < text.Length; j++){
+                itemName = itemName + G(text,j);
+                if(S(text, j+1)) {
+                    result = result.Where(it => it.StartsWith(itemName)).ToList();
+                    if(result.Count == 1) {
+                        var newItem = result.First();
+                        if(text[i] == '@') {
+                            todoLabels.Add(labels.First(it => it.Name == newItem));
+                        }
+                        else
+                        {
+                            todoProjects.Add(projects.First(it => it.Name == newItem)); 
+                        }
+                        i = j+1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return (todoProjects, todoLabels);
+    }
+
+    private static char? G(string text, int index) {
+        Console.WriteLine(index);
+        if(index >= 0 && index < text.Length-1) {
+            
+            return text[index];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+    * Is space
+    */
+    private static bool S(string text, int index) {
+        var s = G(text, index);
+        return s == ' ' || s == null;
+    }
+
+    public void Suggest(int caret, string text) {
+
+    }
+}
+```
+
+```csharp
+var parser = new TodoistParser(projs, labels);
+
+parser.Parse("test");
+```
