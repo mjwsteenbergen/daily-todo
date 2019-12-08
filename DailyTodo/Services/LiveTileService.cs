@@ -30,6 +30,7 @@ namespace DailyTodo.Services
         {
             try
             {
+                TileUpdateManager.CreateTileUpdaterForApplication().Clear();
                 TileUpdateManager.CreateTileUpdaterForApplication().Update(notification);
             }
             catch (Exception)

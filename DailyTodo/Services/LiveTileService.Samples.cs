@@ -24,13 +24,6 @@ namespace DailyTodo.Services
             List<Item> allTodos = await todoist.GetItems();
             List<Item> todos = allTodos.Where(i => i.Labels.Contains(today.Id)).OrderBy(i => i.Priority).ToList();
 
-            // These would be initialized with actual data
-            string from = "Jennifer Parker";
-            string subject = "Photos from our trip";
-            string body = "Check out these awesome photos I took while in New Zealand!";
-
-            ;
-
             // Construct the tile content
             var content = new TileContent()
             {
