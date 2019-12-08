@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
+using ApiLibs.MicrosoftGraph;
+using ApiLibs.Todoist;
+using DailyTodo.Helpers;
+using DailyTodo.Views;
 using Microsoft.Toolkit.Uwp.Notifications;
-
+using Windows.ApplicationModel.Contacts;
 using Windows.UI.Notifications;
 using Windows.UI.StartScreen;
 
@@ -11,38 +16,35 @@ namespace DailyTodo.Services
     internal partial class LiveTileService
     {
         // More about Live Tiles Notifications at https://docs.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-sending-a-local-tile-notification
-        public void SampleUpdate()
+        public async Task SampleUpdate()
         {
+            Settings settings = await new UwpMemory().Read<Settings>("settings.json");
+            var todoist = new TodoistService(settings.TodoistKey, settings.TodoistUserAgent);
+            var today = await todoist.GetLabel("today");
+            List<Item> allTodos = await todoist.GetItems();
+            List<Item> todos = allTodos.Where(i => i.Labels.Contains(today.Id)).OrderBy(i => i.Priority).ToList();
+
             // These would be initialized with actual data
             string from = "Jennifer Parker";
             string subject = "Photos from our trip";
             string body = "Check out these awesome photos I took while in New Zealand!";
+
+            ;
 
             // Construct the tile content
             var content = new TileContent()
             {
                 Visual = new TileVisual()
                 {
-                    Arguments = "Jennifer Parker",
+                    
                     TileMedium = new TileBinding()
                     {
                         Content = new TileBindingContentAdaptive()
                         {
-                            Children =
-                            {
+                            Children = {
                                 new AdaptiveText()
                                 {
-                                    Text = from
-                                },
-                                new AdaptiveText()
-                                {
-                                    Text = subject,
-                                    HintStyle = AdaptiveTextStyle.CaptionSubtle
-                                },
-                                new AdaptiveText()
-                                {
-                                    Text = body,
-                                    HintStyle = AdaptiveTextStyle.CaptionSubtle
+                                    Text = $"DailyTodo ({todos.Count})",
                                 }
                             }
                         }
@@ -52,28 +54,45 @@ namespace DailyTodo.Services
                     {
                         Content = new TileBindingContentAdaptive()
                         {
-                            Children =
-                            {
+                            Children = {
                                 new AdaptiveText()
                                 {
-                                    Text = from,
-                                    HintStyle = AdaptiveTextStyle.Subtitle
-                                },
-                                new AdaptiveText()
-                                {
-                                    Text = subject,
-                                    HintStyle = AdaptiveTextStyle.CaptionSubtle
-                                },
-                                new AdaptiveText()
-                                {
-                                    Text = body,
-                                    HintStyle = AdaptiveTextStyle.CaptionSubtle
+                                    Text = $"DailyTodo ({todos.Count})",
+                                    HintStyle = AdaptiveTextStyle.Title,
                                 }
                             }
                         }
-                    }
+                    },
+
+                    TileLarge = new TileBinding()
+                    {
+                        Content = new TileBindingContentAdaptive()
+                        {
+                            Children = {
+                                new AdaptiveText()
+                                {
+                                    Text = $"DailyTodo ({todos.Count})",
+                                    HintStyle = AdaptiveTextStyle.Title,
+                                }
+                            }
+                        }
+                    },
                 }
             };
+
+            var todoText = todos.Take(3).Select(i => new AdaptiveText()
+            {
+                Text = $" - {i.Content} {"@" + i.Due?.Date.ToString("d\\/MM") ?? "@today"}",
+                HintStyle = AdaptiveTextStyle.CaptionSubtle
+            }).ToList();
+
+            todoText.ForEach(i => (content.Visual.TileMedium.Content as TileBindingContentAdaptive).Children.Add(i));
+
+            todoText.ForEach(i => (content.Visual.TileWide.Content as TileBindingContentAdaptive).Children.Add(i));
+
+            todoText.ForEach(i => (content.Visual.TileLarge.Content as TileBindingContentAdaptive).Children.Add(i));
+
+
 
             // Then create the tile notification
             var notification = new TileNotification(content.GetXml());

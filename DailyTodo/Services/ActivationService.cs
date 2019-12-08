@@ -102,8 +102,7 @@ namespace DailyTodo.Services
 
         private async Task StartupAsync()
         {
-            Singleton<LiveTileService>.Instance.SampleUpdate();
-            await Task.CompletedTask;
+            await Singleton<LiveTileService>.Instance.SampleUpdate();
         }
 
         private IEnumerable<ActivationHandler> GetActivationHandlers()
