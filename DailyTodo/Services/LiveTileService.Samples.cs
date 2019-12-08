@@ -24,72 +24,95 @@ namespace DailyTodo.Services
             List<Item> allTodos = await todoist.GetItems();
             List<Item> todos = allTodos.Where(i => i.Labels.Contains(today.Id)).OrderBy(i => i.Priority).ToList();
 
-            // Construct the tile content
-            var content = new TileContent()
+            var updater = TileUpdateManager.CreateTileUpdaterForApplication();
+            updater.Clear();
+            updater.EnableNotificationQueue(true);
+
+            
+
+            for (int i = 0; i < todos.Count; i += 3)
             {
-                Visual = new TileVisual()
+
+                var content = new TileContent()
                 {
-                    
-                    TileMedium = new TileBinding()
+                    Visual = new TileVisual()
                     {
-                        Content = new TileBindingContentAdaptive()
-                        {
-                            Children = {
-                                new AdaptiveText()
-                                {
-                                    Text = $"DailyTodo ({todos.Count})",
-                                }
-                            }
-                        }
-                    },
 
-                    TileWide = new TileBinding()
-                    {
-                        Content = new TileBindingContentAdaptive()
+                        TileMedium = new TileBinding()
                         {
-                            Children = {
-                                new AdaptiveText()
-                                {
-                                    Text = $"DailyTodo ({todos.Count})",
-                                    HintStyle = AdaptiveTextStyle.Title,
+                            Content = new TileBindingContentAdaptive()
+                            {
+                                Children = {
+                                    new AdaptiveText()
+                                    {
+                                        Text = $"DailyTodo ({todos.Count})",
+                                    }
                                 }
                             }
-                        }
-                    },
+                        },
 
-                    TileLarge = new TileBinding()
-                    {
-                        Content = new TileBindingContentAdaptive()
+                        TileWide = new TileBinding()
                         {
-                            Children = {
-                                new AdaptiveText()
-                                {
-                                    Text = $"DailyTodo ({todos.Count})",
-                                    HintStyle = AdaptiveTextStyle.Title,
+                            Content = new TileBindingContentAdaptive()
+                            {
+                                Children = {
+                                    new AdaptiveText()
+                                    {
+                                        Text = $"DailyTodo ({todos.Count})",
+                                        HintStyle = AdaptiveTextStyle.Title,
+                                    }
+                                }
+                            }
+                        },
+
+                        TileLarge = new TileBinding()
+                        {
+                            Content = new TileBindingContentAdaptive()
+                            {
+                                Children = {
+                                    new AdaptiveText()
+                                    {
+                                        Text = $"DailyTodo ({todos.Count})",
+                                        HintStyle = AdaptiveTextStyle.Title,
+                                    }
                                 }
                             }
                         }
-                    },
+                    }
+                };
+
+                var todoText = todos.Skip(i).Take(3).Select(j => new AdaptiveText()
+                {
+                    Text = $" - {j.Content}",
+                    HintStyle = AdaptiveTextStyle.CaptionSubtle
+                }).ToList();
+
+                todoText.ForEach(j => (content.Visual.TileMedium.Content as TileBindingContentAdaptive).Children.Add(j));
+
+                todoText.ForEach(j => (content.Visual.TileWide.Content as TileBindingContentAdaptive).Children.Add(j));
+
+                todoText.ForEach(j => (content.Visual.TileLarge.Content as TileBindingContentAdaptive).Children.Add(j));
+
+                // Then create the tile notification
+                var notification = new TileNotification(content.GetXml());
+                notification.Tag = "item" + i;
+
+                try
+                {
+                    updater.Update(notification);
                 }
-            };
+                catch (Exception)
+                {
+                    // TODO WTS: Updating LiveTile can fail in rare conditions, please handle exceptions as appropriate to your scenario.
+                }
+            }
 
-            var todoText = todos.Take(3).Select(i => new AdaptiveText()
-            {
-                Text = $" - {i.Content} {"@" + i.Due?.Date.ToString("d\\/MM") ?? "@today"}",
-                HintStyle = AdaptiveTextStyle.CaptionSubtle
-            }).ToList();
-
-            todoText.ForEach(i => (content.Visual.TileMedium.Content as TileBindingContentAdaptive).Children.Add(i));
-
-            todoText.ForEach(i => (content.Visual.TileWide.Content as TileBindingContentAdaptive).Children.Add(i));
-
-            todoText.ForEach(i => (content.Visual.TileLarge.Content as TileBindingContentAdaptive).Children.Add(i));
+            // Construct the tile content
 
 
 
-            // Then create the tile notification
-            var notification = new TileNotification(content.GetXml());
-            UpdateTile(notification);
+
+
         }
 
         public async Task SamplePinSecondaryAsync(string pageName)

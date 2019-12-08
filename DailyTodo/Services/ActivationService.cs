@@ -8,6 +8,7 @@ using DailyTodo.Core.Helpers;
 
 using Windows.ApplicationModel.Activation;
 using Windows.System;
+using Windows.UI.Notifications;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
