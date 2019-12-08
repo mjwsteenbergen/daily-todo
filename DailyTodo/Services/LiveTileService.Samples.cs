@@ -30,7 +30,7 @@ namespace DailyTodo.Services
 
             
 
-            for (int i = 0; i < todos.Count; i += 3)
+            for (int i = 0; i < todos.Count; i += 4)
             {
 
                 var content = new TileContent()
@@ -59,7 +59,7 @@ namespace DailyTodo.Services
                                     new AdaptiveText()
                                     {
                                         Text = $"DailyTodo ({todos.Count})",
-                                        HintStyle = AdaptiveTextStyle.Title,
+                                        HintStyle = AdaptiveTextStyle.Base,
                                     }
                                 }
                             }
@@ -73,7 +73,7 @@ namespace DailyTodo.Services
                                     new AdaptiveText()
                                     {
                                         Text = $"DailyTodo ({todos.Count})",
-                                        HintStyle = AdaptiveTextStyle.Title,
+                                        HintStyle = AdaptiveTextStyle.Base,
                                     }
                                 }
                             }
@@ -81,7 +81,7 @@ namespace DailyTodo.Services
                     }
                 };
 
-                var todoText = todos.Skip(i).Take(3).Select(j => new AdaptiveText()
+                var todoText = todos.Skip(i).Take(4).Select(j => new AdaptiveText()
                 {
                     Text = $" - {j.Content}",
                     HintStyle = AdaptiveTextStyle.CaptionSubtle
