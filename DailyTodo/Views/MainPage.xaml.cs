@@ -1,4 +1,4 @@
-﻿using ApiLibs.Todoist;
+using ApiLibs.Todoist;
 using DailyTodo.Core.Helpers;
 using DailyTodo.Helpers;
 using DailyTodo.Services;
@@ -82,7 +82,7 @@ namespace DailyTodo.Views
                 todayLabel = await Todoist.GetLabel("today");
             }
 
-            Projects = (await Todoist.GetProjects()).OrderBy(i => i.ChildOrder).ToList();
+            Projects = Order(await Todoist.GetProjects()).ToList();
             Labels = await Todoist.GetLabels();
             Items = await Todoist.GetItems();
 
@@ -98,6 +98,11 @@ namespace DailyTodo.Views
             RedoTodos();
             
             isLoaded = true;
+        }
+
+        private IEnumerable<Project> Order(List<Project> projects, long? id = null)
+        {
+            return projects.Where(i => i.ParentId == id).OrderBy(i => i.ChildOrder).SelectMany(i => Order(projects, i.Id).Prepend(i));
         }
 
         private void RedoTodos()
