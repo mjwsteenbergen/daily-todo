@@ -81,7 +81,7 @@ namespace DailyTodo.Services
 
                 var todoText = todos.Skip(i).Take(4).Select(j => new AdaptiveText()
                 {
-                    Text = $" - {j.Content}",
+                    Text = $" - {NotificationHandler.DisplayContent(j.Content)}",
                     HintStyle = AdaptiveTextStyle.CaptionSubtle
                 }).ToList();
 
