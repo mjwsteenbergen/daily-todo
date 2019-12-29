@@ -321,7 +321,7 @@ namespace DailyTodo.Views
         {
             if(sender is ListView view)
             {
-                FilterProjects = view.SelectedItems.Select(i => i as Project).ToList();
+                FilterProjects = view.SelectedItems.Select(i => i as Project).SelectMany(i => Projects.Where(j => j.ParentId == i.Id).Prepend(i)).ToList();
             }
             OnPropertyChanged(nameof(InstanceItems));
         }
