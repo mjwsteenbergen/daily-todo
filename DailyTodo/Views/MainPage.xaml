@@ -13,6 +13,7 @@
     <Page.Resources>
         <local:ItemTextConverter x:Key="ItemTextConverter" />
         <local:ContentTextConverter x:Key="ContentTextConverter"/>
+        <local:MarginConverter x:Key="MarginConverter"/>
     </Page.Resources>
     <Grid
         x:Name="ContentArea"
@@ -103,7 +104,7 @@
                 <ListView Grid.Row="1" x:Name="ProjectSelector" ItemsSource="{x:Bind InstanceProjects, Mode=OneWay}" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,-25,0" SelectionMode="Multiple" IsMultiSelectCheckBoxEnabled="False" SelectionChanged="ProjectSelectionChanged">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="todoist:Project">
-                            <TextBlock Margin="3" Text="{x:Bind Name}" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                            <TextBlock Margin="{x:Bind Converter={StaticResource MarginConverter}}" Text="{x:Bind Name}" Style="{StaticResource SubtitleTextBlockStyle}"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

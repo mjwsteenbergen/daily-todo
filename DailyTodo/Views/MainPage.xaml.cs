@@ -1,4 +1,4 @@
-using ApiLibs.Todoist;
+﻿using ApiLibs.Todoist;
 using DailyTodo.Core.Helpers;
 using DailyTodo.Helpers;
 using DailyTodo.Services;
@@ -446,6 +446,24 @@ namespace DailyTodo.Views
             }
 
             return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            return value;
+        }
+    }
+
+    public class MarginConverter: IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is Project proj)
+            {
+                return proj.ParentId == null ? new Thickness(3) : new Thickness(24, 3, 3, 3);
+            }
+
+            return new Thickness(3);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
