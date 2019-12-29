@@ -1,5 +1,6 @@
 ﻿using ApiLibs.Todoist;
 using DailyTodo.Helpers;
+using DailyTodo.Services;
 using DailyTodo.Views;
 using System;
 using System.Linq;
@@ -55,6 +56,7 @@ namespace DailyTodo.BackgroundTasks
                 var Todoist = new TodoistService(settings.TodoistKey, settings.TodoistUserAgent);
 
                 await new NotificationHandler().UpdateNotifications(Todoist);
+                await new LiveTileService().SampleUpdate(Todoist);
                 //// TODO WTS: Insert the code that should be executed in the background task here.
                 //// This sample initializes a timer that counts to 100 in steps of 10.  It updates Message each time.
 

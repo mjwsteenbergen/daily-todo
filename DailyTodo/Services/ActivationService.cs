@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using ApiLibs.Todoist;
 using DailyTodo.Activation;
 using DailyTodo.Core.Helpers;
-
+using DailyTodo.Helpers;
+using DailyTodo.Views;
 using Windows.ApplicationModel.Activation;
 using Windows.System;
 using Windows.UI.Notifications;
@@ -101,9 +102,9 @@ namespace DailyTodo.Services
             await Singleton<BackgroundTaskService>.Instance.RegisterBackgroundTasksAsync();
         }
 
-        private async Task StartupAsync()
+        private Task StartupAsync()
         {
-            await Singleton<LiveTileService>.Instance.SampleUpdate();
+            return Task.CompletedTask;
         }
 
         private IEnumerable<ActivationHandler> GetActivationHandlers()

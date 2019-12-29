@@ -16,10 +16,8 @@ namespace DailyTodo.Services
     internal partial class LiveTileService
     {
         // More about Live Tiles Notifications at https://docs.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-sending-a-local-tile-notification
-        public async Task SampleUpdate()
+        public async Task SampleUpdate(TodoistService todoist)
         {
-            Settings settings = await new UwpMemory().Read<Settings>("settings.json");
-            var todoist = new TodoistService(settings.TodoistKey, settings.TodoistUserAgent);
             var today = await todoist.GetLabel("today");
             List<Item> allTodos = await todoist.GetItems();
             List<Item> todos = allTodos.Where(i => i.Labels.Contains(today.Id)).OrderBy(i => i.Priority).ToList();
@@ -28,7 +26,7 @@ namespace DailyTodo.Services
             updater.Clear();
             updater.EnableNotificationQueue(true);
 
-            
+
 
             for (int i = 0; i < todos.Count; i += 4)
             {

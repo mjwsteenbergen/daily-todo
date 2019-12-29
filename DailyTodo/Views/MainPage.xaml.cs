@@ -1,4 +1,5 @@
 ﻿using ApiLibs.Todoist;
+using DailyTodo.Core.Helpers;
 using DailyTodo.Helpers;
 using DailyTodo.Services;
 using System;
@@ -86,7 +87,7 @@ namespace DailyTodo.Views
             Items = await Todoist.GetItems();
 
             await new NotificationHandler().UpdateNotifications(Todoist);
-
+            await Singleton<LiveTileService>.Instance.SampleUpdate(Todoist);
 
             OnPropertyChanged(nameof(InstanceLabels));
             OnPropertyChanged(nameof(InstanceProjects));
